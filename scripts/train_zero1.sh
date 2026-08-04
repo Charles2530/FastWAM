@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export NCCL_IB_DISABLE=0
+
 NPROC_PER_NODE="${1:?Usage: bash scripts/train_zero1.sh <nproc_per_node> [hydra_overrides...]}"
 shift
+export WANDB_API_KEY="d3b5107634e84e5de18f138bef28e4e91bcb00c6"
 
 EXTRA_ARGS=("$@")
-NUM_MACHINES="${NNODES:-1}"
-MACHINE_RANK="${NODE_RANK:-0}"
+NUM_MACHINES="${NNODES:-${SENSECORE_PYTORCH_NNODES:-1}}"
+if [[ "${NUM_MACHINES}" == "1" ]]; then
+  MACHINE_RANK=0
+else
+  MACHINE_RANK="${NODE_RANK:-${SENSECORE_PYTORCH_NODE_RANK:-0}}"
+fi
 MAIN_PROCESS_IP="${MASTER_ADDR:-127.0.0.1}"
 MAIN_PROCESS_PORT="${MASTER_PORT:-29500}"
 
@@ -107,9 +114,16 @@ fi
 
 echo "[launch] nproc_per_node=${NPROC_PER_NODE} num_machines=${NUM_MACHINES} machine_rank=${MACHINE_RANK} run_id=${RUN_ID}"
 
+TOTAL_PROCESSES=$((NPROC_PER_NODE * NUM_MACHINES))
+
 accelerate launch \
   --config_file scripts/accelerate_configs/accelerate_zero1_ds.yaml \
-  --num_processes "${NPROC_PER_NODE}" \
+  --num_machines "${NUM_MACHINES}" \
+  --num_processes "${TOTAL_PROCESSES}" \
+  --machine_rank "${MACHINE_RANK}" \
+  --main_process_ip "${MAIN_PROCESS_IP}" \
+  --main_process_port "${MAIN_PROCESS_PORT}" \
+  --rdzv_backend static \
   scripts/train.py \
   "output_dir=./runs/${TASK_BASENAME}/${RUN_ID}" \
   "wandb.name=${TASK_BASENAME}" \

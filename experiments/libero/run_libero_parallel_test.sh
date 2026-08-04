@@ -3,6 +3,9 @@
 # This script runs LIBERO evaluation tasks in parallel.
 # v3: dynamic GPU load management.
 
+PYTHON_EXECUTABLE="${PYTHON_EXECUTABLE:-python}"
+export PYTHON_EXECUTABLE
+
 run_libero_eval() {
     local task_list_file=$1
     echo "task_file: $task_list_file"
@@ -335,9 +338,9 @@ run_libero_eval() {
         # When the task exits, write a status file so the scheduler can detect failures promptly.
         tmux select-pane -t $SESSION_NAME:$pane_info 2>/dev/null
         tmux send-keys -t $SESSION_NAME:$pane_info "clear" C-m 2>/dev/null
-        tmux send-keys -t $SESSION_NAME:$pane_info "source ~/.bashrc && cd $ROOT_DIR && export EXP_NAME=$EXP_NAME && \
+        tmux send-keys -t $SESSION_NAME:$pane_info "cd $ROOT_DIR && export EXP_NAME=$EXP_NAME && \
             STATUS_FILE='$status_file' LOG_FILE='$log_file' RESULT_FILE='$result_file' && \
-            CUDA_VISIBLE_DEVICES=$gpu_id python experiments/libero/eval_libero_single.py \
+            CUDA_VISIBLE_DEVICES=$gpu_id MUJOCO_EGL_DEVICE_ID=0 "$PYTHON_EXECUTABLE" experiments/libero/eval_libero_single.py \
             task=$CONFIG ckpt=$CKPT \
             EVALUATION.task_suite_name=$suite EVALUATION.task_id=$task_id gpu_id=$gpu_id \
             EVALUATION.num_trials=$NUM_TRIALS EVALUATION.output_dir=$OUTPUT_DIR $EXTRA_ARGS > \"\$LOG_FILE\" 2>&1; \
@@ -625,7 +628,7 @@ run_libero_eval() {
     echo "All tasks completed successfully!"
     # Run the result summarization script
     echo "Generating evaluation report..."
-    python experiments/libero/summarize_results.py --output_dir="$OUTPUT_DIR"
+    "$PYTHON_EXECUTABLE" experiments/libero/summarize_results.py --output_dir="$OUTPUT_DIR"
 }
 
 

@@ -3,6 +3,7 @@ import shlex
 import subprocess
 from datetime import datetime
 from pathlib import Path
+import sys
 
 import hydra
 from hydra.core.hydra_config import HydraConfig
@@ -81,6 +82,7 @@ def run_evaluation(
     env = os.environ.copy()
     env.update(
         {
+            "PYTHON_EXECUTABLE": sys.executable,
             "CONFIG": task_choice,
             "CKPT": ckpt,
             "NUM_GPUS": str(num_gpus),

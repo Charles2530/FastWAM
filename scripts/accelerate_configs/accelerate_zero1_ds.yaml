@@ -2,6 +2,7 @@ compute_environment: LOCAL_MACHINE
 debug: false
 distributed_type: DEEPSPEED
 deepspeed_config:
+  deepspeed_multinode_launcher: standard
   deepspeed_config_file: scripts/ds_configs/ds_zero1_config.json
   zero3_init_flag: false
 
