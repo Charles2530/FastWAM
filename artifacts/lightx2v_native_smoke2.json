@@ -1,0 +1,128 @@
+{
+  "implementation": "LightX2V FastWAMNativeModel",
+  "torch": "2.7.1+cu128",
+  "python": "/mnt/miaohua/charles/codes/LightX2V_fastwam/.venv/bin/python",
+  "checkpoint": "/mnt/miaohua/charles/models/fastwam_release/libero_uncond_2cam224.pt",
+  "dtype": "torch.bfloat16",
+  "gpu_names": {
+    "cuda:0": "NVIDIA H100 80GB HBM3",
+    "cuda:1": "NVIDIA H100 80GB HBM3"
+  },
+  "peer_access": true,
+  "execution_mode": "no_grad",
+  "compile_backend": "explicit_cuda_graph",
+  "latency": "synchronized_end_to_end_wall_ms",
+  "distributed_latency": "max_rank_wall_ms",
+  "context_source": "synthetic",
+  "text_encoder_retained": false,
+  "image_shape": [
+    1,
+    3,
+    224,
+    448
+  ],
+  "context_shape": [
+    128,
+    4096
+  ],
+  "warmup": 1,
+  "iterations": 3,
+  "config": {
+    "ckpt": "/mnt/miaohua/charles/models/fastwam_release/libero_uncond_2cam224.pt",
+    "model_path": "/mnt/miaohua/charles/models/Wan2.2-TI2V-5B",
+    "BENCH": {
+      "groups": [
+        6,
+        7,
+        8
+      ],
+      "warmup": 1,
+      "iters": 3,
+      "graph_warmup": 3,
+      "seed": 42,
+      "device": "cuda:0",
+      "action_device": "cuda:1",
+      "action_horizon": 32,
+      "height": 224,
+      "width": 448,
+      "sigma_shift": 1.0,
+      "prompt": "pick up the object",
+      "use_random_context": true,
+      "verify": true,
+      "atol": 0.02,
+      "rtol": 0.0,
+      "kernel_affine": false,
+      "kernel_rope": true,
+      "output_json": "/mnt/lm_data_afs/charles/codes/FastWAM/artifacts/lightx2v_native_smoke2.json"
+    }
+  },
+  "excluded": [
+    "text_encoding",
+    "model_load",
+    "graph_setup",
+    "validation",
+    "timing_barrier_and_reduction"
+  ],
+  "baseline_difference": "eager uses LightX2V serial operators, not FastWAM model.infer_action per-call module traversal",
+  "results": [
+    {
+      "group": 6,
+      "execution": "Asynchronous (split experts)",
+      "action_steps": 1,
+      "cuda_graph": true,
+      "fusion": false,
+      "gpu_count": 2,
+      "operator_backend": "lightx2v_torch",
+      "status": "passed",
+      "setup_seconds": 4.236260798992589,
+      "validation_max_abs_errors": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "samples_ms": [
+        16.42126392107457,
+        16.38831791933626,
+        16.37542003300041
+      ],
+      "action_shape": [
+        32,
+        7
+      ],
+      "summary": {
+        "mean_ms": 16.395000624470413,
+        "p50_ms": 16.38831791933626,
+        "p90_ms": 16.414674720726907,
+        "min_ms": 16.37542003300041,
+        "max_ms": 16.42126392107457
+      },
+      "peak_allocated_gib": {
+        "cuda:0": 11.82389211654663,
+        "cuda:1": 2.9258522987365723
+      }
+    },
+    {
+      "group": 7,
+      "execution": "Asynchronous",
+      "action_steps": 1,
+      "cuda_graph": true,
+      "fusion": true,
+      "gpu_count": 1,
+      "operator_backend": "lightx2v_kernels",
+      "status": "validation_failed",
+      "error": "Group 7: max abs error 0.06250000, tolerance atol=0.02, rtol=0.0"
+    },
+    {
+      "group": 8,
+      "execution": "Asynchronous (split experts)",
+      "action_steps": 1,
+      "cuda_graph": true,
+      "fusion": true,
+      "gpu_count": 2,
+      "operator_backend": "lightx2v_kernels",
+      "status": "validation_failed",
+      "setup_seconds": 4.55540319904685,
+      "error": "Group 8: max abs error 0.06250000, tolerance atol=0.02, rtol=0.0"
+    }
+  ]
+}

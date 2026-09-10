@@ -14,7 +14,7 @@ model:
   action_dit_pretrained_path: null
 
 EVALUATION:
-  robotwin_root: third_party/RoboTwin
+  robotwin_root: /mnt/lm_data_afs/charles/codes/FastWAM/third_party/RoboTwin
   policy_name: fastwam_policy
   task_name: null
   task_config: demo_randomized
